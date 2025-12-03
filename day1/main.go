@@ -31,6 +31,8 @@ func main() {
 }
 
 func processText(line string) {
+	fmt.Printf("%v\n", line)
+
 	letter := line[:1]
 	numStr := line[1:]
 
@@ -49,16 +51,27 @@ func processText(line string) {
 		num = -num
 	}
 
-	currentNum += (num % 100) * dir
+	// account for negative meaning we passed 0 once
+	if dir == -1 && num >= currentNum && currentNum != 0 {
+		password++
+		fmt.Println("inc password")
+	}
+
+	passwordInc := (currentNum + (num * dir)) / 100
+	if passwordInc < 0 {
+		passwordInc = -passwordInc
+	}
+	password += passwordInc
+	if passwordInc > 0 {
+		fmt.Printf("inc password by %v\n", passwordInc)
+	}
+
+	currentNum += (num * dir) % 100
 	if currentNum < 0 {
 		currentNum += 100
-	}
-	if currentNum > 99 {
+	} else if currentNum > 99 {
 		currentNum -= 100
 	}
 
 	fmt.Printf("currentNum = %v\n", currentNum)
-	if currentNum == 0 {
-		password++
-	}
 }
