@@ -30,28 +30,29 @@ func main() {
 }
 
 func processText(line string) {
-	highestPos := len(line) - 2 // start 2nd from end
-	// highest := int(line[highestPos] - '0')
-
 	// find best first spot
-	for i := highestPos - 1; i >= 0; i-- {
-		if line[i] >= line[highestPos] {
-			highestPos = i
-			// highest = int(line[highestPos] - '0')
+	prevPos := len(line) - 12 // start 12th from end
+	for i := prevPos - 1; i >= 0; i-- {
+		if line[i] >= line[prevPos] {
+			prevPos = i
 		}
 	}
 
-	// find best second spot
-	rPos := len(line) - 1 // start at end
-	// rHigh := int(line[rPos] - '0')
-	for i := rPos - 1; i > highestPos; i-- {
-		if line[i] >= line[rPos] {
-			rPos = i
-			// rHigh = int(line[rPos] - '0')
+	// find next 11 best spots
+	chrs := make([]byte, 12)
+	chrs[0] = line[prevPos]
+	for spot := range 11 {
+		nextPos := len(line) - (11 - spot) // start 11th, 10th, etc. from the end
+		for i := nextPos - 1; i > prevPos; i-- {
+			if line[i] >= line[nextPos] {
+				nextPos = i
+			}
 		}
+		chrs[spot+1] = line[nextPos]
+		prevPos = nextPos
 	}
 
-	res, err := strconv.Atoi(string([]byte{line[highestPos], line[rPos]}))
+	res, err := strconv.Atoi(string(chrs))
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
