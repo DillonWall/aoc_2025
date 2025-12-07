@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -25,8 +24,8 @@ func max(i, j int64) int64 {
 }
 
 func main() {
-	file, err := os.Open("test.txt")
-	// file, err := os.Open("input.txt")
+	// file, err := os.Open("test.txt")
+	file, err := os.Open("input.txt")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
@@ -48,25 +47,45 @@ func main() {
 
 func processText(line string) {
     // if line contains + or * then its a op line
+    operationLine := false
+    if strings.Contains(line, "+") || strings.Contains(line, "*") {
+        operationLine = true
+    }
+    firstLine := false
+    if problems == nil || len(problems) == 0 {
+        firstLine = true
+    }
 
-	if readingRange {
-		split := strings.Split(line, "-")
-		lower, err := strconv.ParseInt(split[0], 10, 64)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-		}
-		upper, err := strconv.ParseInt(split[1], 10, 64)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-		}
-		ranges = append(ranges, Range{lower, upper})
-	} else {
-		// id, err := strconv.Atoi(line)
-		// if err != nil {
-		// 	fmt.Printf("Error: %v\n", err)
-		// }
-		// checkId(id)
-	}
+    parts := strings.Fields(line)
+    if !operationLine {
+        for i, part := range parts {
+            num, err := strconv.Atoi(part)
+            if err != nil {
+                fmt.Printf("Error: %v\n", err)
+            }
+            if firstLine {
+                problems = append(problems, Problem{Nums: []int{num}})
+            } else {
+                problems[i].Nums = append(problems[i].Nums, num)
+            }
+        }
+    } else {
+        for i, part := range parts {
+            problems[i].Operator = part[0]
+            res := 0
+            if problems[i].Operator == '+' {
+                for _, n := range problems[i].Nums {
+                    res += n
+                }
+            } else if problems[i].Operator == '*' {
+                res = 1
+                for _, n := range problems[i].Nums {
+                    res *= n
+                }
+            }
+            result += int64(res)
+        }
+    }
 }
 
 func calculateResults() {
