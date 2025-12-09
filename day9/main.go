@@ -18,6 +18,13 @@ type Coord struct {
 var result int64 = 0
 var coords []Coord = make([]Coord, 0)
 
+func min(i1, i2 int) int {
+    if i1 < i2 {
+        return i1
+    }
+    return i2
+}
+
 func max(i, j int) int {
 	if i > j {
 		return i
@@ -26,8 +33,8 @@ func max(i, j int) int {
 }
 
 func main() {
-	// file, err := os.Open("test.txt")
-	file, err := os.Open("input.txt")
+	file, err := os.Open("test.txt")
+	// file, err := os.Open("input.txt")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
@@ -98,58 +105,12 @@ func (h *PairHeap) Pop() any {
 }
 
 func calculateResults() {
-	valid := make([][]bool, lastY+1)
-	for i := range lastY+1 {
-		valid[i] = make([]bool, lastX+1)
-	}
-
-	sign := func(x int) int {
-		if x < 0 {
-			return -1
-		} else if x > 0 {
-			return 1
-		}
-		return 0
-	}
-
-	for i := 0; i < len(coords); i++ {
-		prev := coords[i]
-		curr := coords[(i+1)%len(coords)] // wraps to first after last
-		dx := sign(curr.X - prev.X)
-		dy := sign(curr.Y - prev.Y)
-		x, y := prev.X, prev.Y
-		for x != curr.X || y != curr.Y {
-			valid[y][x] = true
-			x += dx
-			y += dy
-		}
-	}
-
-	// minX, maxX := coords[0].X, coords[0].X
-	// minY, maxY := coords[0].Y, coords[0].Y
-	// for _, c := range coords {
-	// 	if c.X < minX { minX = c.X }
-	// 	if c.X > maxX { maxX = c.X }
-	// 	if c.Y < minY { minY = c.Y }
-	// 	if c.Y > maxY { maxY = c.Y }
-	// }
-	// midX := (minX + maxX) / 2
-	// midY := (minY + maxY) / 2
-	midX := 96300
-	midY := 56000
-
-	queue := []Coord{Coord{midX, midY}}
-
-	for len(queue) > 0 {
-		p := queue[0]
-		queue = queue[1:]
-		x, y := p.X, p.Y
-		if valid[y][x] {
-			continue
-		}
-		valid[y][x] = true
-		queue = append(queue, Coord{x + 1, y}, Coord{x - 1, y}, Coord{x, y + 1}, Coord{x, y - 1})
-	}
+    // get lines between all coords, including last to first
+    lines := make([][2]Coord, 0)
+    for i := 0; i < len(coords); i++ {
+        j := (i + 1) % len(coords)
+        lines = append(lines, [2]Coord{coords[i], coords[j]})
+    }
 
 	areas := make([]Area, 0)
 	for i := 0; i < len(coords)-1; i++ {
@@ -162,25 +123,31 @@ func calculateResults() {
 		return areas[i].A < areas[j].A
 	})
 
-	// for _, arr := range valid {
-	// 	fmt.Printf("%v\n", arr)
-	// }
-
 	for i := len(areas)-1; i >= 0; i-- {
 		a := areas[i]
-		done := false
-		for x := min(a.P1.X, a.P2.X); x <= max(a.P1.X, a.P2.X); x++ {
-			for y := min(a.P1.Y, a.P2.Y); y <= max(a.P1.Y, a.P2.Y); y++ {
-				if !valid[y][x] {
-					done = true
-					break
-				}
-			}
-			if done {
-				break
-			}
-		}
-		if !done {
+        aMinX := min(a.P1.X, a.P2.X)
+        aMaxX := max(a.P1.X, a.P2.X)
+        aMinY := min(a.P1.Y, a.P2.Y)
+        aMaxY := max(a.P1.Y, a.P2.Y)
+        // check if any line intersects with area
+        found := false
+        for _, line := range lines {
+            minX := min(line[0].X, line[1].X)
+            maxX := max(line[0].X, line[1].X)
+            minY := min(line[0].Y, line[1].Y)
+            maxY := max(line[0].Y, line[1].Y)
+            vertIntersects := (minX < aMaxX && maxX > aMinX) && !(minY > aMaxY) && !(maxY < aMinY)
+            horzIntersects := (minY < aMaxY && maxY > aMinY) && !(minX > aMaxX) && !(maxX < aMinX)
+            if minX == maxX {
+
+            if vertIntersects || horzIntersects {
+                fmt.Printf("Area %v between points (%v,%v) and (%v,%v) intersects with line between (%v,%v) and (%v,%v)\n", a.A, a.P1.X, a.P1.Y, a.P2.X, a.P2.Y, line[0].X, line[0].Y, line[1].X, line[1].Y)
+                found = true
+                break
+            }
+        }
+		if !found {
+            fmt.Printf("Found area %v between points (%v,%v) and (%v,%v)\n", a.A, a.P1.X, a.P1.Y, a.P2.X, a.P2.Y)
 			result = int64(a.A)
 			return
 		}
