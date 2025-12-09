@@ -28,8 +28,8 @@ func max(i, j int64) int64 {
 }
 
 func main() {
-	// file, err := os.Open("test.txt")
-	file, err := os.Open("input.txt")
+	file, err := os.Open("test.txt")
+	// file, err := os.Open("input.txt")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
@@ -102,7 +102,6 @@ func calculateResults() {
 			dists = append(dists, Dist{dsquared(coords[i], coords[j]), i, j})
 		}
     }
-	fmt.Printf("dists: %v\n", dists)
 
 	sort.Slice(dists, func(i, j int) bool {
 		return dists[i].D < dists[j].D
@@ -110,7 +109,7 @@ func calculateResults() {
 
 	cToJunc := make(map[int]int)
 	curJunc := 1
-	for _, dist := range dists[:NUM_BOXES] {
+	for _, dist := range dists {
 		j1, ok1 := cToJunc[dist.P1]
 		j2, ok2 := cToJunc[dist.P2]
 		if !ok1 && !ok2 {
@@ -128,7 +127,22 @@ func calculateResults() {
 				}
 			}
 		}
+		if len(cToJunc) == len(coords) {
+			test := cToJunc[1]
+			for _, v := range cToJunc {
+				if v != test {
+					test = -1
+					break
+				}
+			}
+			if test != -1 {
+				result = int64(coords[dist.P1].X * coords[dist.P2].X)
+				return
+			}
+		}
 	}
+
+	fmt.Printf("Shouldnt get here")
 
 	counts := make(map[int]int, 0)
 	for _, v := range cToJunc {
