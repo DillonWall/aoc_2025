@@ -33,8 +33,8 @@ func max(i, j int) int {
 }
 
 func main() {
-	file, err := os.Open("test.txt")
-	// file, err := os.Open("input.txt")
+	// file, err := os.Open("test.txt")
+	file, err := os.Open("input.txt")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
@@ -75,8 +75,8 @@ func processText(lineno int, line string) {
 }
 
 func area(point1, point2 Coord) int {
-	return int(math.Abs(float64(point1.X - point2.X) + 1) *
-			   math.Abs(float64(point1.Y - point2.Y) + 1))
+	return int((math.Abs(float64(point1.X - point2.X))+1) *
+			   (math.Abs(float64(point1.Y - point2.Y))+1))
 }
 
 type Area struct {
@@ -109,6 +109,9 @@ func calculateResults() {
     lines := make([][2]Coord, 0)
     for i := 0; i < len(coords); i++ {
         j := (i + 1) % len(coords)
+		if coords[i].X != coords[j].X && coords[i].Y != coords[j].Y {
+			fmt.Printf("Error: line between (%v,%v) and (%v,%v) is not vertical or horizontal\n", coords[i].X, coords[i].Y, coords[j].X, coords[j].Y)
+		}
         lines = append(lines, [2]Coord{coords[i], coords[j]})
     }
 
@@ -136,15 +139,13 @@ func calculateResults() {
             maxX := max(line[0].X, line[1].X)
             minY := min(line[0].Y, line[1].Y)
             maxY := max(line[0].Y, line[1].Y)
-            vertIntersects := (minX < aMaxX && maxX > aMinX) && !(minY > aMaxY) && !(maxY < aMinY)
-            horzIntersects := (minY < aMaxY && maxY > aMinY) && !(minX > aMaxX) && !(maxX < aMinX)
-            if minX == maxX {
-
-            if vertIntersects || horzIntersects {
+			// check if the lines which are all either vertical or horizontal intersect with the area
+			// they intersect if they are within the bounds of the area (not only touching)
+			if !(maxX <= aMinX || minX >= aMaxX || maxY <= aMinY || minY >= aMaxY) {
                 fmt.Printf("Area %v between points (%v,%v) and (%v,%v) intersects with line between (%v,%v) and (%v,%v)\n", a.A, a.P1.X, a.P1.Y, a.P2.X, a.P2.Y, line[0].X, line[0].Y, line[1].X, line[1].Y)
-                found = true
-                break
-            }
+				found = true
+				break
+			}
         }
 		if !found {
             fmt.Printf("Found area %v between points (%v,%v) and (%v,%v)\n", a.A, a.P1.X, a.P1.Y, a.P2.X, a.P2.Y)
