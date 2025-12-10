@@ -30,8 +30,8 @@ func max(i, j int) int {
 }
 
 func main() {
-	file, err := os.Open("test.txt")
-	// file, err := os.Open("input.txt")
+	// file, err := os.Open("test.txt")
+	file, err := os.Open("input.txt")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
@@ -74,6 +74,8 @@ func processText(lineno int, line string) {
 		buttons = append(buttons, nums)
 	}
 
+    fmt.Printf("Goal: %b\n", goal)
+    fmt.Printf("Buttons: %v\n", buttons)
 	visited := make(map[int]bool)
 	queue := []int{0}
 	for len(queue) > 0 {
@@ -85,15 +87,31 @@ func processText(lineno int, line string) {
 		visited[state] = true
 
 		current := 0
+        count := 0
 		for b := 0; b < len(buttons); b++ {
-			if (state & (1 << b)) == 1 {
+            if (state & (1 << b)) != 0 {
+                count++
 				for _, pos := range buttons[b] {
 					// toggle pos in current
 					current ^= (1 << pos)
 				}
 			}
 		}
-		// TODO
+        fmt.Printf("Current for state %b: %b\n", state, current)
+
+        if current == goal {
+            fmt.Printf("Found solution with count %d\n", count)
+            fmt.Printf("State: %b\n", state)
+            result += int64(count)
+            return
+        }
+
+        for b := 0; b < len(buttons); b++ {
+            nextState := state ^ (1 << b)
+            if !visited[nextState] {
+                queue = append(queue, nextState)
+            }
+        }
 	}
 }
 
